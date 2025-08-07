@@ -24,7 +24,7 @@ class VehicleController extends Controller
             'createdBy:id,username,name',
             'updatedBy:id,username,name'
         ])->findOrFail($id);
-        
+
         return inertia('admin/vehicle/Detail', [
             'data' => $item,
         ]);
@@ -99,7 +99,7 @@ class VehicleController extends Controller
                 Rule::unique('vehicles', 'name')->ignore($request->id), // agar saat update tidak dianggap duplikat sendiri
             ],
             'plate_number' => 'nullable|max:20',
-            'type' => ['required', 'string', Rule::in(Vehicle::Types)],
+            'type' => ['nullable', 'string', Rule::in(Vehicle::Types)],
             'capacity' => 'nullable|numeric',
             'active' => 'nullable|boolean',
             'notes' => 'nullable|max:1000',
@@ -122,5 +122,4 @@ class VehicleController extends Controller
             'message' => "Varietas $item->name telah dihapus."
         ]);
     }
-
 }
