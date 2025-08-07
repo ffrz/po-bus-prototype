@@ -14,10 +14,15 @@ use App\Http\Middleware\Auth;
 use App\Http\Middleware\NonAuthenticated;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CacheController;
+
+Route::get('/admin/cache/clear', [CacheController::class, 'clear']);
+Route::get('/admin/cache/create', [CacheController::class, 'cache']);
 
 Route::get('/', function () {
     return view('homepage-new');
 })->name('home');
+
 
 Route::get('/test', function () {
     return inertia('Test');
