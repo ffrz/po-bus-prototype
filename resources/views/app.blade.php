@@ -24,6 +24,7 @@
           'USER_ROLES' => \App\Models\User::Roles,
           'CUSTOMER_TYPES' => \App\Models\Customer::Types,
           'VEHICLE_TYPES' => \App\Models\Vehicle::Types,
+          'VEHICLE_STATUSES' => \App\Models\Vehicle::Statuses,
       ]) ?>;
     @if (!!env('APP_DEMO'))
       window.CONFIG.APP_DEMO = 1

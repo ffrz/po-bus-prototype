@@ -13,12 +13,15 @@ return new class extends Migration
     {
         Schema::create('vehicles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('category_id')->nullable()->on('product_categories')->nullOnDelete();
-            $table->string('name', 100)->unique();
-            $table->string('type', 100)->default('');
-            $table->string('plate_number')->default('');
+            $table->string('code', 20)->unique();
+            $table->string('description', 100)->nullable()->default('');
+            $table->string('type', 20)->nullable()->default('');
+            $table->string('plate_number')->nullable()->default('');
             $table->unsignedTinyInteger('capacity')->default(0);
-            $table->boolean('active')->default(true);
+            $table->string('status', 20)->nullable()->default('');
+            $table->string('brand', 40)->nullable()->default('');
+            $table->string('model', 40)->nullable()->default('');
+            $table->unsignedInteger('year')->nullable();
             $table->text('notes')->nullable();
 
             $table->datetime('created_at')->nullable();
@@ -26,6 +29,10 @@ return new class extends Migration
 
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
+
+            $table->index('type');
+            $table->index('plate_number');
+            $table->index('status');
         });
     }
 

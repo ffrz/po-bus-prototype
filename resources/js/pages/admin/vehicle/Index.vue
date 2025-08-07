@@ -2,79 +2,67 @@
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 import { handleDelete, handleFetchItems } from "@/helpers/client-req-handler";
-import { getQueryParams, formatNumber } from "@/helpers/utils";
+import { getQueryParams } from "@/helpers/utils";
 import { useQuasar } from "quasar";
-import { useProductCategoryFilter } from "@/composables/useProductCategoryFilter";
 import { usePageStorage } from "@/composables/usePageStorage";
+import { vehicleStatusOptions } from "@/helpers/options";
 
 const page = usePage();
 const storage = usePageStorage("vehicle");
-const statuses = [
-  { value: "all", label: "Semua" },
-  { value: "active", label: "Aktif" },
-  { value: "inactive", label: "Tidak Aktif" },
-];
 
 const title = "Armada";
 const $q = useQuasar();
+
 const showFilter = ref(storage.get("show-filter", false));
 const rows = ref([]);
 const loading = ref(true);
+
+// Filter default
 const filter = reactive(
   storage.get("filter", {
     status: "all",
-    category_id: "all",
     search: "",
     ...getQueryParams(),
   })
 );
+
+// Pagination default
 const pagination = ref(
   storage.get("pagination", {
     page: 1,
     rowsPerPage: 10,
     rowsNumber: 10,
-    sortBy: "name",
+    sortBy: "code",
     descending: false,
   })
 );
-let columns;
-if (page.props.auth.user.role != "bs") {
-  columns = [
-    { name: "category", label: "Kategori", field: "category", align: "left" },
-    {
-      name: "name",
-      label: "Armada",
-      field: "name",
-      align: "left",
-      sortable: true,
-    },
-    { name: "action", align: "right" },
-  ];
-} else {
-  columns = [
-    { name: "category", label: "Kategori", field: "category", align: "left" },
-    {
-      name: "name",
-      label: "Brand",
-      field: "name",
-      align: "left",
-      sortable: true,
-    },
-    { name: "action", align: "right" },
-  ];
-}
+
+// Opsi status
+const statuses = [{ value: "all", label: "Semua" }, ...vehicleStatusOptions()];
+
+// Kolom tabel
+const columns = [
+  {
+    name: "code",
+    label: "Kode",
+    field: "code",
+    align: "left",
+    sortable: true,
+  },
+  {
+    name: "description",
+    label: "Deskripsi",
+    field: "description",
+    align: "left",
+    sortable: true,
+  },
+  { name: "status", label: "Status", field: "status", align: "left" },
+  { name: "action", align: "right" },
+];
 
 onMounted(() => {
   fetchItems();
 });
-
-const deleteItem = (row) =>
-  handleDelete({
-    message: `Hapus Varietas ${row.name}?`,
-    url: route("admin.vehicle.delete", row.id),
-    fetchItemsCallback: fetchItems,
-    loading,
-  });
 
 const fetchItems = (props = null) => {
   handleFetchItems({
@@ -87,34 +75,33 @@ const fetchItems = (props = null) => {
   });
 };
 
-const onFilterChange = () => {
-  fetchItems();
-};
+// Hapus data
+const deleteItem = (row) =>
+  handleDelete({
+    message: `Hapus kendaraan ${row.name}?`,
+    url: route("admin.vehicle.delete", row.id),
+    fetchItemsCallback: fetchItems,
+    loading,
+  });
 
-const { filteredCategories, filterCategories } = useProductCategoryFilter(
-  page.props.categories,
-  true
-);
-
+// Filter kolom untuk mobile
 const computedColumns = computed(() =>
   $q.screen.gt.sm
     ? columns
-    : columns.filter((col) => ["name", "action"].includes(col.name))
+    : columns.filter((col) => ["code", "action"].includes(col.name))
 );
 
+// Watchers
 watch(filter, () => storage.set("filter", filter), { deep: true });
-watch(showFilter, () => storage.set("show-filter", showFilter.value), {
-  deep: true,
-});
-watch(pagination, () => storage.set("pagination", pagination.value), {
-  deep: true,
-});
+watch(showFilter, () => storage.set("show-filter", showFilter.value));
+watch(pagination, () => storage.set("pagination", pagination.value));
 </script>
 
 <template>
   <i-head :title="title" />
   <authenticated-layout>
     <template #title>{{ title }}</template>
+
     <template #right-button>
       <q-btn
         icon="add"
@@ -136,8 +123,6 @@ watch(pagination, () => storage.set("pagination", pagination.value), {
         dense
         class="q-ml-sm"
         color="grey"
-        style=""
-        @click.stop
       >
         <q-menu
           anchor="bottom right"
@@ -172,42 +157,31 @@ watch(pagination, () => storage.set("pagination", pagination.value), {
         </q-menu>
       </q-btn>
     </template>
+
     <template #header v-if="showFilter">
       <q-toolbar class="filter-bar">
         <div class="row q-col-gutter-xs items-center q-pa-sm full-width">
           <q-select
             v-model="filter.status"
-            class="custom-select col-xs-12 col-sm-2"
+            class="col-xs-12 col-sm-2"
             :options="statuses"
             label="Status"
             dense
+            outlined
             map-options
             emit-value
-            outlined
-            style="min-width: 150px"
-            @update:model-value="onFilterChange"
+            @update:model-value="fetchItems"
           />
-          <q-select
-            v-model="filter.category_id"
-            label="Kategori"
-            class="custom-select col-xs-12 col-sm-2"
-            outlined
-            input-debounce="300"
-            :options="filteredCategories"
-            map-options
-            dense
-            emit-value
-            style="min-width: 150px"
-            @update:model-value="onFilterChange"
-          />
+
           <q-input
             class="col"
             outlined
             dense
             debounce="300"
             v-model="filter.search"
-            placeholder="Cari"
+            placeholder="Cari kendaraan"
             clearable
+            @update:model-value="fetchItems"
           >
             <template v-slot:append>
               <q-icon name="search" />
@@ -216,6 +190,7 @@ watch(pagination, () => storage.set("pagination", pagination.value), {
         </div>
       </q-toolbar>
     </template>
+
     <div class="q-pa-sm">
       <q-table
         flat
@@ -234,55 +209,58 @@ watch(pagination, () => storage.set("pagination", pagination.value), {
         binary-state-sort
       >
         <template v-slot:loading>
-          <q-inner-loading showing color="red" />
+          <q-inner-loading showing color="primary" />
         </template>
-        <template v-slot:no-data="{ icon, message, filter }">
+
+        <template v-slot:no-data="{ message, filter }">
           <div class="full-width row flex-center text-grey-8 q-gutter-sm">
             <span
-              >{{ message }} {{ filter ? " with term " + filter : "" }}</span
+              >{{ message }}
+              {{ filter ? " dengan pencarian " + filter : "" }}</span
             >
           </div>
         </template>
+
         <template v-slot:body="props">
           <q-tr
             :props="props"
-            :class="{ inactive: !props.row.active }"
+            :class="props.row.status !== 'active' ? 'inactive' : 'active'"
             class="cursor-pointer"
             @click="router.get(route('admin.vehicle.detail', props.row.id))"
           >
-            <q-td key="category" :props="props" class="wrap-column">
-              {{ props.row.category ? props.row.category.name : "" }}
+            <q-td key="code" :props="props" class="wrap-column">
+              {{ props.row.code }}
+              <div v-if="!$q.screen.gt.sm" class="text-grey-8">
+                <div>{{ props.row.description }}</div>
+                <q-badge class="q-mr-xs">{{
+                  $CONSTANTS.VEHICLE_TYPES?.[props.row.type] || "–"
+                }}</q-badge>
+                <q-badge>{{
+                  $CONSTANTS.VEHICLE_STATUSES?.[props.row.status] || "–"
+                }}</q-badge>
+              </div>
             </q-td>
-            <q-td key="name" :props="props" class="wrap-column">
-              {{ props.row.name }}
-              <template v-if="!$q.screen.gt.sm">
-                <div v-if="props.row.category_id" class="text-grey-8">
-                  <q-icon name="category" /> {{ props.row.category.name }}
-                </div>
-              </template>
+            <q-td key="description" :props="props" class="wrap-column">
+              {{ props.row.description }}
+            </q-td>
+            <q-td key="status" :props="props" class="wrap-column">
+              {{ $CONSTANTS.VEHICLE_STATUSES?.[props.row.status] || "–" }}
             </q-td>
             <q-td key="action" :props="props">
-              <div
-                class="flex justify-end"
-                v-if="
-                  $can('admin.vehicle.duplicate') ||
-                  $can('admin.vehicle.edit') ||
-                  $can('admin.vehicle.delete')
-                "
-              >
+              <div class="flex justify-end">
                 <q-btn
                   icon="more_vert"
                   dense
                   flat
-                  style="height: 40px; width: 30px"
                   @click.stop
+                  style="height: 40px; width: 30px"
+                  v-if="
+                    $can('admin.vehicle.duplicate') ||
+                    $can('admin.vehicle.edit') ||
+                    $can('admin.vehicle.delete')
+                  "
                 >
-                  <q-menu
-                    anchor="bottom right"
-                    self="top right"
-                    transition-show="scale"
-                    transition-hide="scale"
-                  >
+                  <q-menu anchor="bottom right" self="top right">
                     <q-list style="width: 200px">
                       <q-item
                         v-if="$can('admin.vehicle.duplicate')"
@@ -295,10 +273,10 @@ watch(pagination, () => storage.set("pagination", pagination.value), {
                           )
                         "
                       >
-                        <q-item-section avatar>
-                          <q-icon name="file_copy" />
-                        </q-item-section>
-                        <q-item-section icon="copy">Duplikat</q-item-section>
+                        <q-item-section avatar
+                          ><q-icon name="file_copy"
+                        /></q-item-section>
+                        <q-item-section>Duplikat</q-item-section>
                       </q-item>
                       <q-item
                         v-if="$can('admin.vehicle.edit')"
@@ -309,21 +287,21 @@ watch(pagination, () => storage.set("pagination", pagination.value), {
                           router.get(route('admin.vehicle.edit', props.row.id))
                         "
                       >
-                        <q-item-section avatar>
-                          <q-icon name="edit" />
-                        </q-item-section>
-                        <q-item-section icon="edit">Edit</q-item-section>
+                        <q-item-section avatar
+                          ><q-icon name="edit"
+                        /></q-item-section>
+                        <q-item-section>Edit</q-item-section>
                       </q-item>
                       <q-item
                         v-if="$can('admin.vehicle.delete')"
-                        @click.stop="deleteItem(props.row)"
                         clickable
                         v-ripple
                         v-close-popup
+                        @click.stop="deleteItem(props.row)"
                       >
-                        <q-item-section avatar>
-                          <q-icon name="delete_forever" />
-                        </q-item-section>
+                        <q-item-section avatar
+                          ><q-icon name="delete_forever"
+                        /></q-item-section>
                         <q-item-section>Hapus</q-item-section>
                       </q-item>
                     </q-list>

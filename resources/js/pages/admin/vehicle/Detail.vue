@@ -1,10 +1,9 @@
 <script setup>
-import { formatNumber } from "@/helpers/utils";
 import { router, usePage } from "@inertiajs/vue3";
 import { useQuasar } from "quasar";
 
 const page = usePage();
-const title = `Rincian Armada #${page.props.data.id}`;
+const title = `Rincian Armada #${page.props.data.code}`;
 const $q = useQuasar();
 </script>
 
@@ -37,53 +36,83 @@ const $q = useQuasar();
         />
       </div>
     </template>
+
     <div class="row justify-center">
       <div class="col col-lg-6 q-pa-sm">
         <div class="row">
-          <q-card square flat bordered class="q-card col">
+          <q-card square flat bordered class="col">
             <q-card-section>
               <table class="detail">
                 <tbody>
                   <tr>
-                    <td style="width: 120px">Nama</td>
+                    <td style="width: 140px">Kode</td>
                     <td style="width: 1px">:</td>
-                    <td>
-                      {{ page.props.data.name }}
-                    </td>
+                    <td>{{ page.props.data.code }}</td>
                   </tr>
                   <tr>
-                    <td>Kategori</td>
+                    <td>Deskripsi</td>
+                    <td>:</td>
+                    <td>{{ page.props.data.description || "-" }}</td>
+                  </tr>
+                  <tr>
+                    <td>Jenis</td>
                     <td>:</td>
                     <td>
                       {{
-                        page.props.data.category
-                          ? page.props.data.category.name
-                          : "--Tidak memiliki kategori--"
+                        $CONSTANTS.VEHICLE_TYPES[page.props.data.type] || "-"
                       }}
                     </td>
                   </tr>
                   <tr>
-                    <td>Catatan</td>
+                    <td>Plat Nomor</td>
                     <td>:</td>
-                    <td>{{ page.props.data.notes }}</td>
+                    <td>{{ page.props.data.plate_number || "-" }}</td>
+                  </tr>
+                  <tr>
+                    <td>Kapasitas</td>
+                    <td>:</td>
+                    <td>{{ page.props.data.capacity }} penumpang</td>
                   </tr>
                   <tr>
                     <td>Status</td>
                     <td>:</td>
                     <td>
-                      {{ page.props.data.active ? "Aktif" : "Tidak Aktif" }}
+                      {{
+                        $CONSTANTS.VEHICLE_STATUSES[page.props.data.status] ||
+                        "-"
+                      }}
                     </td>
                   </tr>
+                  <tr>
+                    <td>Merk</td>
+                    <td>:</td>
+                    <td>{{ page.props.data.brand || "-" }}</td>
+                  </tr>
+                  <tr>
+                    <td>Model</td>
+                    <td>:</td>
+                    <td>{{ page.props.data.model || "-" }}</td>
+                  </tr>
+                  <tr>
+                    <td>Tahun</td>
+                    <td>:</td>
+                    <td>{{ page.props.data.year || "-" }}</td>
+                  </tr>
+                  <tr>
+                    <td>Catatan</td>
+                    <td>:</td>
+                    <td>{{ page.props.data.notes || "-" }}</td>
+                  </tr>
 
-                  <tr v-if="!!page.props.data.created_at">
-                    <td>Dibuat Oleh</td>
+                  <tr v-if="page.props.data.created_at">
+                    <td>Dibuat oleh</td>
                     <td>:</td>
                     <td>
                       <template v-if="page.props.data.created_by">
                         <i-link
                           :href="
                             route('admin.user.detail', {
-                              id: page.props.data.created_by,
+                              id: page.props.data.created_by.id,
                             })
                           "
                         >
@@ -93,13 +122,13 @@ const $q = useQuasar();
                         -
                       </template>
                       {{
-                        $dayjs(
-                          new Date(page.props.data.created_at)
-                        ).format("dddd, D MMMM YYYY pukul HH:mm:ss")
+                        $dayjs(page.props.data.created_at).format(
+                          "dddd, D MMMM YYYY [pukul] HH:mm:ss"
+                        )
                       }}
                     </td>
                   </tr>
-                  <tr v-if="!!page.props.data.updated_at">
+                  <tr v-if="page.props.data.updated_at">
                     <td>Diperbarui oleh</td>
                     <td>:</td>
                     <td>
@@ -107,7 +136,7 @@ const $q = useQuasar();
                         <i-link
                           :href="
                             route('admin.user.detail', {
-                              id: page.props.data.updated_by,
+                              id: page.props.data.updated_by.id,
                             })
                           "
                         >
@@ -117,9 +146,9 @@ const $q = useQuasar();
                         -
                       </template>
                       {{
-                        $dayjs(
-                          new Date(page.props.data.updated_at)
-                        ).format("dddd, D MMMM YYYY pukul HH:mm:ss")
+                        $dayjs(page.props.data.updated_at).format(
+                          "dddd, D MMMM YYYY [pukul] HH:mm:ss"
+                        )
                       }}
                     </td>
                   </tr>

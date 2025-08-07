@@ -1,28 +1,30 @@
 <script setup>
 import { router, useForm, usePage } from "@inertiajs/vue3";
 import { handleSubmit } from "@/helpers/client-req-handler";
-import { create_options, scrollToFirstErrorField } from "@/helpers/utils";
-import { useProductCategoryFilter } from "@/composables/useProductCategoryFilter";
+import { scrollToFirstErrorField } from "@/helpers/utils";
+import { vehicleTypeOptions, vehicleStatusOptions } from "@/helpers/options";
 
 const page = usePage();
 const title = (!!page.props.data.id ? "Edit" : "Tambah") + " Armada";
 
 const form = useForm({
   id: page.props.data.id,
-  category_id: page.props.data.category_id,
-  name: page.props.data.name,
-  plate_number: page.props.data.plate_number,
-  capacity: page.props.data.capacity,
-  type: page.props.data.type,
-  active: !!page.props.data.active,
-  notes: page.props.data.notes,
+  code: page.props.data.code ?? "",
+  description: page.props.data.description ?? "",
+  type: page.props.data.type ?? "",
+  plate_number: page.props.data.plate_number ?? "",
+  capacity: page.props.data.capacity ?? 0,
+  status: page.props.data.status ?? "",
+  brand: page.props.data.brand ?? "",
+  model: page.props.data.model ?? "",
+  year: page.props.data.year ?? "",
+  notes: page.props.data.notes ?? "",
 });
 
-const types = [];
-const categories = [];
+const types = vehicleTypeOptions();
+const statuses = vehicleStatusOptions();
 
-const submit = () => handleSubmit({ form, url: route('admin.vehicle.save') });
-
+const submit = () => handleSubmit({ form, url: route("admin.vehicle.save") });
 </script>
 
 <template>
@@ -31,44 +33,143 @@ const submit = () => handleSubmit({ form, url: route('admin.vehicle.save') });
     <template #title>{{ title }}</template>
     <q-page class="row justify-center">
       <div class="col col-lg-6 q-pa-sm">
-        <q-form class="row" @submit.prevent="submit" @validation-error="scrollToFirstErrorField">
+        <q-form
+          class="row"
+          @submit.prevent="submit"
+          @validation-error="scrollToFirstErrorField"
+        >
           <q-card square flat bordered class="col">
             <q-card-section class="q-pt-md">
               <input type="hidden" name="id" v-model="form.id" />
-              <q-input v-model.trim="form.name" label="Nama Armada" lazy-rules :error="!!form.errors.name"
-                :disable="form.processing" :error-message="form.errors.name" :rules="[
-                  (val) => (val && val.length > 0) || 'Nama harus diisi.',
-                ]" />
-              <q-input v-model.trim="form.plate_number" label="Plat Nomor" lazy-rules :error="!!form.errors.plate_number"
-                :disable="form.processing" :error-message="form.errors.plate_number" :rules="[
-                  (val) => (val && val.length > 0) || 'Plat Nomor harus diisi.',
-                ]" />
-              <q-input v-model.trim="form.capacity" label="Kapasitas" lazy-rules :error="!!form.errors.capacity"
-                :disable="form.processing" :error-message="form.errors.capacity" :rules="[
-                  (val) => (val && val.length > 0) || 'Kapasitas harus diisi.',
-                ]" />
-              <q-select v-model="form.type" label="Jenis"
-                :options="types" map-options emit-value option-label="label"
-                option-value="value" :error="!!form.errors.type" :disable="form.processing" />
-              <q-select v-model="form.type" label="Kategori"
-                :options="categories" map-options emit-value option-label="label"
-                option-value="value" :error="!!form.errors.category_id" :disable="form.processing" />
-              <div style="margin-left: -10px;">
-                <q-checkbox class="full-width q-pl-none" v-model="form.active" :disable="form.processing"
-                  label="Aktif" />
-              </div>
-              <q-input v-model.trim="form.notes" type="textarea" autogrow counter maxlength="1000" label="Catatan"
-                lazy-rules :disable="form.processing" :error="!!form.errors.notes" :error-message="form.errors.notes" />
+
+              <q-input
+                v-model.trim="form.code"
+                label="Kode Armada"
+                maxlength="20"
+                lazy-rules
+                :error="!!form.errors.code"
+                :error-message="form.errors.code"
+                :disable="form.processing"
+                :rules="[(val) => !!val || 'Kode harus diisi.']"
+              />
+
+              <q-input
+                v-model.trim="form.description"
+                label="Deskripsi"
+                maxlength="100"
+                lazy-rules
+                :error="!!form.errors.description"
+                :error-message="form.errors.description"
+                :disable="form.processing"
+                :rules="[(val) => !!val || 'Deskripsi harus diisi.']"
+              />
+
+              <q-select
+                v-model="form.type"
+                label="Jenis Armada"
+                :options="types"
+                map-options
+                emit-value
+                option-label="label"
+                option-value="value"
+                :error="!!form.errors.type"
+                :error-message="form.errors.type"
+                :disable="form.processing"
+              />
+
+              <q-select
+                v-model="form.status"
+                label="Status"
+                :options="statuses"
+                map-options
+                emit-value
+                option-label="label"
+                option-value="value"
+                :error="!!form.errors.status"
+                :error-message="form.errors.status"
+                :disable="form.processing"
+              />
+              <q-input
+                v-model.trim="form.plate_number"
+                label="Plat Nomor"
+                maxlength="20"
+                lazy-rules
+                :error="!!form.errors.plate_number"
+                :error-message="form.errors.plate_number"
+                :disable="form.processing"
+                :rules="[(val) => !!val || 'Plat nomor harus diisi.']"
+              />
+
+              <q-input
+                v-model.number="form.capacity"
+                label="Kapasitas Kursi"
+                type="number"
+                min="0"
+                :error="!!form.errors.capacity"
+                :error-message="form.errors.capacity"
+                :disable="form.processing"
+              />
+
+              <q-input
+                v-model.trim="form.brand"
+                label="Merek"
+                maxlength="40"
+                :error="!!form.errors.brand"
+                :error-message="form.errors.brand"
+                :disable="form.processing"
+              />
+
+              <q-input
+                v-model.trim="form.model"
+                label="Model"
+                maxlength="40"
+                :error="!!form.errors.model"
+                :error-message="form.errors.model"
+                :disable="form.processing"
+              />
+
+              <q-input
+                v-model.number="form.year"
+                label="Tahun"
+                type="number"
+                min="1950"
+                max="2100"
+                :error="!!form.errors.year"
+                :error-message="form.errors.year"
+                :disable="form.processing"
+              />
+
+              <q-input
+                v-model.trim="form.notes"
+                label="Catatan"
+                type="textarea"
+                autogrow
+                maxlength="1000"
+                :error="!!form.errors.notes"
+                :error-message="form.errors.notes"
+                :disable="form.processing"
+              />
             </q-card-section>
+
             <q-card-section class="q-gutter-sm">
-              <q-btn icon="save" type="submit" label="Simpan" color="primary" :disable="form.processing" />
-              <q-btn icon="cancel" label="Batal" :disable="form.processing"
-                @click="router.get(route('admin.vehicle.index'))" />
+              <q-btn
+                icon="save"
+                type="submit"
+                label="Simpan"
+                color="primary"
+                :disable="form.processing"
+              />
+              <q-btn
+                icon="cancel"
+                label="Batal"
+                flat
+                :disable="form.processing"
+                @click="router.get(route('admin.vehicle.index'))"
+              />
             </q-card-section>
           </q-card>
         </q-form>
       </div>
     </q-page>
-
   </authenticated-layout>
 </template>

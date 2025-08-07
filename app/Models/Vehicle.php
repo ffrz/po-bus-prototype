@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Vehicle Model
@@ -16,36 +15,51 @@ class Vehicle extends BaseModel
      * The attributes that are mass assignable.
      */
     protected $fillable = [
-        'category_id',
-        'name',
-        'plat_number',
+        'code',
+        'description',
+        'plate_number',
         'type',
         'capacity',
-        'active',
+        'status',
+        'brand',
+        'model',
+        'year',
         'notes',
+        'created_by',
+        'updated_by',
     ];
 
+    /**
+     * The attributes that should be cast.
+     */
     protected $casts = [
-        'category_id' => 'integer',
-        'active' => 'boolean',
-        'created_by' => 'integer',
-        'updated_by' => 'integer',
+        'capacity'    => 'integer',
+        'year'        => 'integer',
+        'created_by'  => 'integer',
+        'updated_by'  => 'integer',
     ];
 
-    const Type_BigBus = 'big-bus';
+    /**
+     * Vehicle type constants.
+     */
+    const Type_BigBus    = 'big-bus';
     const Type_MediumBus = 'medium-bus';
 
     const Types = [
-        self::Type_BigBus => 'Big Bus',
+        self::Type_BigBus    => 'Big Bus',
         self::Type_MediumBus => 'Medium Bus',
     ];
 
     /**
-     * Get the category for the product.
+     * Vehicle status constants.
      */
-    public function category()
-    {
-        return $this->belongsTo(VehicleCategory::class);
-    }
+    const Status_Active      = 'active';
+    const Status_Inactive    = 'inactive';
+    const Status_Maintenance = 'maintenance';
 
+    const Statuses = [
+        self::Status_Active      => 'Aktif',
+        self::Status_Inactive    => 'Tidak Aktif',
+        self::Status_Maintenance => 'Maintenance',
+    ];
 }
