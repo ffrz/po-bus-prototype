@@ -214,7 +214,7 @@ onMounted(() => {
               <q-item-label>Pemesanan</q-item-label>
             </q-item-section>
           </q-item>
-          
+
           <q-separator />
           <q-item
             clickable
@@ -244,21 +244,7 @@ onMounted(() => {
               <q-item-label>Armada</q-item-label>
             </q-item-section>
           </q-item>
-          <q-item
-            v-if="$can('admin.vehicle-category.index')"
-            clickable
-            v-ripple
-            :active="$page.url.startsWith('/admin/vehicle-categories')"
-            @click="router.get(route('admin.vehicle-category.index'))"
-          >
-            <q-item-section avatar>
-              <q-icon name="category" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>Kategori Armada</q-item-label>
-            </q-item-section>
-          </q-item>
-          
+
           <q-separator />
           <q-item
             v-if="$can('admin.user.index')"
