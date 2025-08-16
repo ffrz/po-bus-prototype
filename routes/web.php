@@ -137,6 +137,10 @@ Route::get('/sse-test', function() {
     return view('sse-test');
 });
 
+Route::get('/sse-idle-test', function () {
+    return view('sse-idle-test');
+});
+
 Route::get('/sse-demo', function () {
     return new StreamedResponse(function () {
         // matikan limit eksekusi PHP (default 30 detik di banyak server)
@@ -148,6 +152,33 @@ Route::get('/sse-demo', function () {
             ob_flush();
             flush();
             sleep(3);
+        }
+    }, 200, [
+        'Content-Type' => 'text/event-stream',
+        'Cache-Control' => 'no-cache',
+        'Connection' => 'keep-alive',
+    ]);
+});
+
+Route::get('/sse-idle-demo', function () {
+    return new StreamedResponse(function () {
+        // Header SSE
+        echo "retry: 3000\n"; // Auto-reconnect di client setelah 3 detik
+        echo "data: Connected\n\n";
+        ob_flush();
+        flush();
+
+        // Diam tanpa kirim data untuk simulasi idle
+        // Loop kosong ini hanya untuk jaga koneksi tetap hidup
+        while (true) {
+            // Kalau mau test idle total, jangan kirim apapun di sini
+            // Kalau mau kirim heartbeat, bisa uncomment ini
+            // echo "event: ping\n";
+            // echo "data: " . now()->toTimeString() . "\n\n";
+            // ob_flush();
+            // flush();
+
+            sleep(1);
         }
     }, 200, [
         'Content-Type' => 'text/event-stream',
