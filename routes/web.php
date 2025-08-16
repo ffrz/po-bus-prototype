@@ -127,3 +127,31 @@ Route::middleware([Auth::class])->group(function () {
         });
     });
 });
+
+
+// SSE TEST
+// routes/web.php
+use Symfony\Component\HttpFoundation\StreamedResponse;
+
+Route::get('/sse-test', function() {
+    return view('sse-test');
+});
+
+Route::get('/sse-demo', function () {
+    return new StreamedResponse(function () {
+        // matikan limit eksekusi PHP (default 30 detik di banyak server)
+        set_time_limit(0);
+
+        // kirim update terus setiap 3 detik
+        for ($i = 1; $i <= 100; $i++) {
+            echo "data: " . json_encode(['time' => date('H:i:s')]) . "\n\n";
+            ob_flush();
+            flush();
+            sleep(3);
+        }
+    }, 200, [
+        'Content-Type' => 'text/event-stream',
+        'Cache-Control' => 'no-cache',
+        'Connection' => 'keep-alive',
+    ]);
+});
